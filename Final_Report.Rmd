@@ -109,7 +109,7 @@ gradcafe = gradcafe %>%
 levels(gradcafe$semester) = sapply(c(13:17), function(x) c(paste0("F",x)))
 
 ## Save scraped data to gradcafe.Rdata
-save(gradcafe, file = "gradcafe.Rdata")
+save(gradcafe, file = "data/gradcafe.Rdata")
 ```
 
 ## Step 2) Convert the GRE scores 
@@ -130,7 +130,7 @@ for(i in seq_along(gre_score$prior)){
   gre[gre_score$prior[i]] = gre_score$current[i]
 }
 
-save(gre, file = "gre_score.Rdata")
+save(gre, file = "data/gre_score.Rdata")
 ```
 
 ## Step 3) Clean the institution names and gre scores
@@ -147,7 +147,7 @@ Next, we used keyword detection to match institution names in `gradcafe.Rdata` t
 
 ```{r, warning=FALSE, echo = FALSE, message=FALSE}
 ###########institution names
-institution = read_csv("School Names - Sheet1.csv", col_names = FALSE)
+institution = read_csv("data/School Names - Sheet1.csv", col_names = FALSE)
 names(institution) = c("standard", "abbr")
 institution = institution %>%
   mutate(
@@ -163,8 +163,8 @@ inst = data.frame(standard = rep(institution$standard, sapply(institution$abbr, 
   mutate(abbr = str_trim(abbr))
 
 ###########clean columns except institution
-load(file = "gradcafe.Rdata")
-load(file = "gre_score.Rdata")
+load(file = "data/gradcafe.Rdata")
+load(file = "data/gre_score.Rdata")
 
 cleaned_gradcafe = gradcafe %>%
   mutate(GRE_Subject = ifelse(GRE_Subject < 100, GRE_Subject*10, GRE_Subject)) %>%
@@ -194,7 +194,7 @@ cleaned_gradcafe = cleaned_gradcafe %>%
 
 cleaned_gradcafe = cleaned_gradcafe %>% drop_na(standard)
 
-save(cleaned_gradcafe, file = "cleaned_gradcafe.Rdata")
+save(cleaned_gradcafe, file = "data/cleaned_gradcafe.Rdata")
 ```
 
 ## Step 4) Scrape Wikipedia for college descriptions and pictures for logos and seals
@@ -204,7 +204,7 @@ To include descriptions, logos and seals of the different colleges, we scraped W
 By pasting college names to the base url of Wikipedia webpage, we scraped the introduction paragraph from the Wikipage of each college. We also extracted the pictures, logos, and seals of that college from the same webpage. We used the selector gadget to identify nodes for each part, then cleaned them with regular expressions. We ended up with a list of introductions, pictures, logos and seals for each school. The results were stored as `wiki.Rdata`. 
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-load("cleaned_gradcafe.Rdata")
+load("data/cleaned_gradcafe.Rdata")
 college_list = cleaned_gradcafe %>% 
   dplyr::select(standard) %>% unique() %>%  
   arrange((standard)) %>% 
@@ -259,7 +259,7 @@ for(i in 1:length(college_list)){
   wiki = bind_rows(wiki,temp)
 }
 
-save(wiki, file = "wiki.Rdata")
+save(wiki, file = "data/wiki.Rdata")
 ```
 
 
@@ -288,8 +288,8 @@ Limitations:
 Even though we have over 4000 data entries, there is insufficient data for some of the colleges. Therefore, it's difficult to run statistical analysis for these schools or draw general conclusions. As more and more posts appear on thegradcafe.com, our app will become increasingly helpful.  
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-load("cleaned_gradcafe.Rdata")
-load("wiki.Rdata")
+load("data/cleaned_gradcafe.Rdata")
+load("data/wiki.Rdata")
 
 ##########get function
 get_data = function(this_school, this_degree, 
